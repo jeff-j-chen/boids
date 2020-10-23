@@ -34,7 +34,7 @@
     </style>
     <script type="text/javascript" src="paper-full.min.js"></script>
     <script type="text/paperscript" canvas="canvas">
-        var colors = [
+    var colors = [
         ["#461220", "#8c2f39", "#b23a48", "#fcb9b2", "#fed0bb"],
         ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"],
         ["#fff275", "#ff8c42", "#ff3c38", "#a23e48", "#6c8ead"],
@@ -64,6 +64,15 @@
         ["#843636", "#331313", "#990303", "#cc3b3b", "#fc4e4e"],
         ["#190b28", "#685762", "#9b9987", "#efa9ae", "#e55381"],
     ];
+    var presets = [
+        {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
+        {rota: 4.73569016316868, jitt: 7.4794727702763595, asim: 0.1854237053557087, cent: 0.4425814039317707},
+        {rota: 8.528888877307478, jitt: 11.137953822784699, asim: 0.5959628482635636, cent: -0.09962570320716457}, 
+    ];
+    var presetNames = [
+        "default", "bunch", "aaaah",
+    ];
+    var curPresetIndex = 0;
     // an array of colors our boids will inherit their strokecolors from. this is put at the top because otherwise it's in my way
     function Boid(point, rotation, colorPreset) {
         // boid object creator
@@ -215,10 +224,10 @@
     };
     var boids = [];
     // an array to store our boids in
-    var rotationStrength = 1.5;
-    var jitterStrength = 3;
-    var assimStrength = 1/10;
-    var centerStrength = 1/20;
+    var rotationStrength = presets[curPresetIndex].rota;
+    var jitterStrength = presets[curPresetIndex].jitt;
+    var assimStrength = presets[curPresetIndex].asim;
+    var centerStrength = presets[curPresetIndex].cent;
     // variables for how strong the avoidance, assimilation, and cohesion forces should be
     var boidSpeed = 9;
     // how fast the boids should move
@@ -326,16 +335,22 @@
             // if the key pressed is ctrl, recolor the boids and have a chance to give them a hueshift effect
         } 
         else if (event.key === "left") {
-            boids.forEach(function(boid) {
-                boid.path.rotate(-10);
-            });
-            // if key pressed is left arrow then rotate counterclockwise
+            curPresetIndex -= 1;
+            if (curPresetIndex < 0) { curPresetIndex = presets.length - 1; }
+            // decrement the current preset index, and then set variables
+            rotationStrength = presets[curPresetIndex].rota;
+            jitterStrength = presets[curPresetIndex].jitt;
+            assimStrength = presets[curPresetIndex].asim;
+            centerStrength = presets[curPresetIndex].cent;
         } 
         else if (event.key === "right") {
-            boids.forEach(function(boid) {
-                boid.path.rotate(10);
-            });
-            // if key pressed is right arrow then rotate counterclockwise
+            curPresetIndex += 1;
+            if (curPresetIndex >= presets.length) { curPresetIndex = 0; }
+            // decrement the current preset index, and then set variables
+            rotationStrength = presets[curPresetIndex].rota;
+            jitterStrength = presets[curPresetIndex].jitt;
+            assimStrength = presets[curPresetIndex].asim;
+            centerStrength = presets[curPresetIndex].cent;
         } 
         else if (event.key === "up") {
             boidSpeed++;
@@ -348,15 +363,18 @@
             // if key pressed is down arrow then decrement boid speed, stopping it at 0 (negative vector lengths still result in positvie)
         } 
         else if (event.key === "shift") {
-            rotationStrength = randFloat(1, 5);
-            console.log("rotation strength: " + rotationStrength);
-            jitterStrength = randFloat(0, 10);
-            console.log("jitter strength: " + jitterStrength);
-            assimStrength = randFloat(0, 0.5);
-            console.log("assim strength: " + assimStrength);
-            centerStrength = randFloat(0, 0.5);
-            console.log("center strength: " + centerStrength + "\n\n");
+            rotationStrength = randFloat(-1, 10);
+            jitterStrength = randFloat(-1, 15);
+            assimStrength = randFloat(-0.1, 1);
+            centerStrength = randFloat(-0.1, 1);
             // if key pressed is shift then reassign the key variables dicating movement, just for fun
+            // {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
+            console.log(
+                "{rota: " + rotationStrength +
+                ", jitt: " + jitterStrength + 
+                ", asim: " + assimStrength + 
+                ", cent: " + centerStrength + "}, "
+            );
         }
         else if (event.key === "[") {
             if (boids.length) {
@@ -413,6 +431,6 @@
     </script>
 </head>
 <body>
-    <text class="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to turn clockwise / counterclockwise </text>
+    <text class="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset </text>
     <canvas id="canvas" resize hidpi="off" style="background: black; -webkit-user-drag: none; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);" width="1600" height="900"></canvas>
 </body></html>
