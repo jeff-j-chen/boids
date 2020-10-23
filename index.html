@@ -66,11 +66,15 @@
     ];
     var presets = [
         {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
-        {rota: 4.73569016316868, jitt: 7.4794727702763595, asim: 0.1854237053557087, cent: 0.4425814039317707},
-        {rota: 8.528888877307478, jitt: 11.137953822784699, asim: 0.5959628482635636, cent: -0.09962570320716457}, 
+        {rota: 9.846425429983917, jitt: 4.619739696082743, asim: -0.4456285100699352, cent: 1.4780939033983924},
+        {rota: 9.547509296882478, jitt: 8.657290547956823, asim: -0.04796548709637993, cent: 0.55271642000927}, 
+        {rota: 1.75, jitt: 7, asim: 0.3, cent: 0.07},  
     ];
     var presetNames = [
-        "default", "bunch", "aaaah",
+        "default", 
+        "flying c's",
+        "tumbleweed",
+        "shoals",
     ];
     var curPresetIndex = 0;
     // an array of colors our boids will inherit their strokecolors from. this is put at the top because otherwise it's in my way
@@ -342,6 +346,8 @@
             jitterStrength = presets[curPresetIndex].jitt;
             assimStrength = presets[curPresetIndex].asim;
             centerStrength = presets[curPresetIndex].cent;
+            document.getElementById("bottomtext").innerHTML = "<b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>current preset:</b> " + presetNames[curPresetIndex];
+            // update the bottom text to reflect the current preset
         } 
         else if (event.key === "right") {
             curPresetIndex += 1;
@@ -351,6 +357,8 @@
             jitterStrength = presets[curPresetIndex].jitt;
             assimStrength = presets[curPresetIndex].asim;
             centerStrength = presets[curPresetIndex].cent;
+            document.getElementById("bottomtext").innerHTML = "<b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>current preset:</b> " + presetNames[curPresetIndex];
+            // update the bottom text to reflect the current preset
         } 
         else if (event.key === "up") {
             boidSpeed++;
@@ -363,19 +371,53 @@
             // if key pressed is down arrow then decrement boid speed, stopping it at 0 (negative vector lengths still result in positvie)
         } 
         else if (event.key === "shift") {
-            rotationStrength = randFloat(-1, 10);
-            jitterStrength = randFloat(-1, 15);
-            assimStrength = randFloat(-0.1, 1);
-            centerStrength = randFloat(-0.1, 1);
+            rotationStrength = randFloat(0, 5);
+            jitterStrength = randFloat(0, 10);
+            assimStrength = randFloat(0, 0.5);
+            centerStrength = randFloat(0, 0.25);
             // if key pressed is shift then reassign the key variables dicating movement, just for fun
             // {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
-            console.log(
-                "{rota: " + rotationStrength +
-                ", jitt: " + jitterStrength + 
-                ", asim: " + assimStrength + 
-                ", cent: " + centerStrength + "}, "
-            );
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
         }
+        else if (event.key === "m") {
+            rotationStrength += randFloat(-2, 2);
+            jitterStrength += randFloat(-5, 5);
+            assimStrength += randFloat(-0.25, 0.25);
+            centerStrength += randFloat(-0.25, 0.25);
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        /*else if (event.key === "u") {
+            rotationStrength += 0.25;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        else if (event.key === "i") {
+            jitterStrength += 0.5;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        else if (event.key === "o") {
+            assimStrength += 0.05;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        else if (event.key === "p") {
+            centerStrength += 0.01;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        else if (event.key === "j") {
+            rotationStrength -= 0.25;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        else if (event.key === "k") {
+            jitterStrength -= 0.5;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        else if (event.key === "l") {
+            assimStrength -= 0.05;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }
+        else if (event.key === ";") {
+            centerStrength -= 0.01;
+            console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
+        }*/
         else if (event.key === "[") {
             if (boids.length) {
                 boids.pop().path.remove();
@@ -431,6 +473,6 @@
     </script>
 </head>
 <body>
-    <text class="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset </text>
+    <text class="bottomtext" id="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>current preset:</b> default</text>
     <canvas id="canvas" resize hidpi="off" style="background: black; -webkit-user-drag: none; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);" width="1600" height="900"></canvas>
 </body></html>
