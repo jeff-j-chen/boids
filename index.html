@@ -65,19 +65,20 @@
         ["#190b28", "#685762", "#9b9987", "#efa9ae", "#e55381"],
     ];
     var presets = [
-        {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
+        {rota: 1.75, jitt: 7, asim: 0.3, cent: 0.07},  
         {rota: 9.846425429983917, jitt: 4.619739696082743, asim: -0.4456285100699352, cent: 1.4780939033983924},
         {rota: 9.547509296882478, jitt: 8.657290547956823, asim: -0.04796548709637993, cent: 0.55271642000927}, 
-        {rota: 1.75, jitt: 7, asim: 0.3, cent: 0.07},  
+        {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
+        {rota: 0, jitt: 0, asim: 0, cent: 0},
     ];
     var presetNames = [
-        "default", 
+        "shoals", 
         "flying c's",
         "tumbleweed",
-        "shoals",
+        "old",
+        "zero"
     ];
     var curPresetIndex = 0;
-    // an array of colors our boids will inherit their strokecolors from. this is put at the top because otherwise it's in my way
     function Boid(point, rotation, colorPreset) {
         // boid object creator
         this.path = new Path({
@@ -87,7 +88,7 @@
             applyMatrix: false,
             rotation: rotation
         });
-        // create a new pat, and give it desired attributes
+        // create a new path, and give it desired attributes
         this.path.add([-15, 10], [0, 0], [-15, -10]);
         // make the angle shape
         this.path.position = point;
@@ -233,14 +234,14 @@
     var assimStrength = presets[curPresetIndex].asim;
     var centerStrength = presets[curPresetIndex].cent;
     // variables for how strong the avoidance, assimilation, and cohesion forces should be
-    var boidSpeed = 9;
+    var boidSpeed = 10;
     // how fast the boids should move
     var personalSpace = 60;
     // at which point the boids should try to avoid each other
-    var numBoids = 45;
+    var numBoids = 75;
     var spawnedBoids = 0;
     // number of boids that we want to spawn in
-    var maxSteps = 8;
+    var maxSteps = 6;
     // how many frames each boid should simulate to detect future collisions
     var viewDist = 85;
     // the radius of which a boid will detect nearby boids
@@ -248,7 +249,7 @@
     // set the initial colorset for the boids
     var hueShift = false;
     // start off without the hueshift effect
-    var counter = -30;
+    var counter = 0;
     // counter for the breathing effect
     setSpawnInterval();
     // spawn the boids
@@ -280,6 +281,10 @@
                     boid.path.strokeColor.brightness += 0.005;
                     boid.path.strokeColor.saturation += 0.005;
                 });
+            }
+            else { 
+                boid.path.strokeColor.brightness = 1;
+                boid.path.strokeColor.saturation = 1;
             }
             counter += 1;
             if (counter > 50) {
