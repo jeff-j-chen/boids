@@ -66,29 +66,38 @@
     ];
     var presets = [
         {rota: 1.75, jitt: 7, asim: 0.3, cent: 0.07},  
-        {rota: 9.846425429983917, jitt: 4.619739696082743, asim: -0.4456285100699352, cent: 1.4780939033983924},
         {rota: 9.547509296882478, jitt: 8.657290547956823, asim: -0.04796548709637993, cent: 0.55271642000927}, 
         {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
         {rota: 0, jitt: 0, asim: 0, cent: 0},
+        {rota: 1.75, jitt: 7, asim: 0, cent: 0},
+        {rota: 1.75, jitt: 7, asim: 0.3, cent: 0},
+        {rota: 1.75, jitt: 7, asim: 0.3, cent: 0.07}
     ];
     var presetNames = [
         "shoals", 
-        "flying c's",
         "tumbleweed",
         "old",
-        "zero"
+        "zero",
+        "avoidance",
+        "avoid, assimilate",
+        "avoid, assimilate, center"
     ];
     var curPresetIndex = 0;
+    // an array of colors our boids will inherit their strokecolors from. this is put at the top because otherwise it's in my way
     function Boid(point, rotation, colorPreset) {
         // boid object creator
         this.path = new Path({
             strokeColor: randChoice(colorPreset),
-            strokeWidth: "9",
+            strokeWidth: 9,
             pivot: [-7.5, 0],
             applyMatrix: false,
             rotation: rotation
         });
-        // create a new path, and give it desired attributes
+        this.baseColor = this.path.strokeColor;
+        this.path.strokeColor.brightness += 0.25;
+        this.path.strokeColor.saturation += 0.25;
+        // store the initial color so we can restore it 
+        // create a new pat, and give it desired attributes
         this.path.add([-15, 10], [0, 0], [-15, -10]);
         // make the angle shape
         this.path.position = point;
@@ -130,7 +139,7 @@
                     if (!(angleTo <= -135 || angleTo >= 135)) {
                         // limit the boid's view by filtering out others that are in a 90 degree cone behind it
                         if (curDist !== 0) {
-                            // if the distance to is not 0 (so we don't select ourselves)
+                            // if the distance to is not 0 (so it doesn't select itself)
                             nearby.push(boid);
                             // push the boid into our array
                             if (curDist < distTo) {
@@ -192,6 +201,29 @@
             }
             // ripped off stackoverflow, this is a method for determining if the nearest boid's position is to the left of right of the current boid. if to the right then turn left and vice versa
         },
+        avoidWalls: function() { 
+            //console.log(this.path.position);
+            var curVector = new Point({
+                angle: this.path.rotation,
+                length: wallDistCheck,
+                applyMatrix: false
+            });
+            var testPos = this.path.position + curVector;
+            if (testPos.isInside(view.bounds)) { return false; }
+            // test 75 steps ahead of this, if inside then return (stop)
+            curVector = new Point({ angle: this.path.rotation+90, length: wallDistCheck, applyMatrix: false });
+            testPos = this.path.position + curVector;
+            if (testPos.isInside(view.bounds)) { this.path.rotate(rotationStrength * avoidanceStrength); return true; }
+            // check 90 degrees, if inside then turn in that direction and stop
+            curVector = new Point({ angle: this.path.rotation-90, length: wallDistCheck, applyMatrix: false });
+            testPos = this.path.position + curVector;
+            if (testPos.isInside(view.bounds)) { this.path.rotate(-rotationStrength * avoidanceStrength); return true; }
+            // check -90 degrees, if inside then turn in that direction and stop
+            this.path.rotate(rotationStrength * avoidanceStrength * 3)
+            // both directions turn us into a wall, so triple the rotation speed
+            return true;
+            // return whether the boid had to avoid a wall or not
+        },
         assimilateNearby: function(nearby) {
             var nearbyAngles = nearby.map(function(nearby) {
                 return nearby.path.rotation;
@@ -224,7 +256,7 @@
         },
         newJitter: function() {
             this.jitter = randFloat(-jitterStrength, jitterStrength);
-            // assign a new jitter maount
+            // assign a new jitter amount
         }
     };
     var boids = [];
@@ -234,14 +266,19 @@
     var assimStrength = presets[curPresetIndex].asim;
     var centerStrength = presets[curPresetIndex].cent;
     // variables for how strong the avoidance, assimilation, and cohesion forces should be
+    var defaultAvoidance = 3;
+    var avoidanceStrength = 3;
+    // how strongly boids should turn from walls
+    var wallDistCheck = 500;
+    // how far away boids should start turning from walls
     var boidSpeed = 10;
     // how fast the boids should move
-    var personalSpace = 60;
+    var personalSpace = 65;
     // at which point the boids should try to avoid each other
-    var numBoids = 75;
+    var numBoids = 85;
     var spawnedBoids = 0;
     // number of boids that we want to spawn in
-    var maxSteps = 6;
+    var maxSteps = 7;
     // how many frames each boid should simulate to detect future collisions
     var viewDist = 85;
     // the radius of which a boid will detect nearby boids
@@ -249,7 +286,7 @@
     // set the initial colorset for the boids
     var hueShift = false;
     // start off without the hueshift effect
-    var counter = 0;
+    var increase = true;
     // counter for the breathing effect
     setSpawnInterval();
     // spawn the boids
@@ -258,39 +295,34 @@
         // every frame (30/s or 60/s)
         boids.forEach(function(boid) {
             // for every boid
+            // boid.avoidWalls();
             boid.jitterRotation();
             boid.checkNearby();
             boid.moveBoid();
             // perform necessary actions
         });
-        if (frame.count % 4 === 0) {
-            // every 4 frames
+        if (frame.count % 2 === 0) {
             if (hueShift) {
                 // if there is a hueshift effect active then shift the hue of each boid
                 boids.forEach(function(boid) {
                     boid.path.strokeColor.hue += 5;
                 });
             }
-            if (counter < 0) {
-            boids.forEach(function(boid) {
-                boid.path.strokeColor.brightness -= 0.005;
-                boid.path.strokeColor.saturation -= 0.005;
-            });
-            } else if (counter > 0) {
+            if (frame.count % 50 == 0) {
+                increase = !increase;
+            }
+            else if (increase) {
                 boids.forEach(function(boid) {
-                    boid.path.strokeColor.brightness += 0.005;
-                    boid.path.strokeColor.saturation += 0.005;
+                    boid.path.strokeColor.brightness += 0.01;
+                    boid.path.strokeColor.saturation += 0.01;
                 });
             }
-            else { 
-                boid.path.strokeColor.brightness = 1;
-                boid.path.strokeColor.saturation = 1;
+            else {
+                boids.forEach(function(boid) {
+                    boid.path.strokeColor.brightness -= 0.01;
+                    boid.path.strokeColor.saturation -= 0.01;
+                });
             }
-            counter += 1;
-            if (counter > 50) {
-                counter = -50;
-            }
-            // various stuff for a 'breathing' effect, where the saturation and brightness of each boid fluctuates up and down
         }
         if (frame.count % 60 === 0) {
             boids.forEach(function(boid) {
@@ -342,6 +374,8 @@
                 });
             }
             // if the key pressed is ctrl, recolor the boids and have a chance to give them a hueshift effect
+            // if (avoidanceStrength > 0) { avoidanceStrength = 0 }
+            // else { avoidanceStrength = defaultAvoidance; }
         } 
         else if (event.key === "left") {
             curPresetIndex -= 1;
@@ -445,7 +479,6 @@
         if (position.x > viewBounds.width + 5) {
             position.x = -item.bounds.width;
         }
-    
         if (position.x < -itemBounds.width - 5) {
             position.x = viewBounds.width;
         }
@@ -478,6 +511,6 @@
     </script>
 </head>
 <body>
-    <text class="bottomtext" id="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>current preset:</b> default</text>
+    <text class="bottomtext" id="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>current preset:</b> shoals</text>
     <canvas id="canvas" resize hidpi="off" style="background: black; -webkit-user-drag: none; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);" width="1600" height="900"></canvas>
 </body></html>
