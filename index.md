@@ -32,7 +32,13 @@
             color: #828181;
         }
     </style>
-    <script type="text/javascript" src="paper-full.min.js"></script>
+    
+</head>
+<body>
+    <text class="bottomtext" id="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>current preset:</b> shoals</text>
+    <canvas id="canvas" resize hidpi="off" style="background: black; -webkit-user-drag: none; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);" width="1600" height="900"></canvas>
+</body>
+<script type="text/javascript" src="paper-full.min.js"></script>
     <script type="text/paperscript" canvas="canvas">
     var colors = [
         ["#461220", "#8c2f39", "#b23a48", "#fcb9b2", "#fed0bb"],
@@ -509,8 +515,4 @@
         return Math.sqrt(Math.pow(one.x - two.x, 2) + Math.pow(one.y - two.y, 2))
     }
     </script>
-</head>
-<body>
-    <text class="bottomtext" id="bottomtext"><b>space</b> to redraw&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;<b>ctrl</b> to recolor&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>] / [</b> to add / remove boids&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>shift</b> to randomize variables&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>up / down</b> to accelerate / decelerate&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>right / left</b> to change preset&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>current preset:</b> shoals</text>
-    <canvas id="canvas" resize hidpi="off" style="background: black; -webkit-user-drag: none; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);" width="1600" height="900"></canvas>
-</body></html>
+</html>
