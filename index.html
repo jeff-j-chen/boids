@@ -65,7 +65,9 @@
         ["#190b28", "#685762", "#9b9987", "#efa9ae", "#e55381"],
     ];
     var presets = [
-        {rota: 1.75, jitt: 7, asim: 0.3, cent: 0.07},  
+        {rota: 1.6, jitt: 7, asim: 0.3, cent: 0.07},
+        {rota: 0.5, jitt: 7.363573640198961, asim: 0.31144733521242796, cent: 0.0194014068884118},
+        {rota: 0.4986989328250657, jitt: 2.9626193740839835, asim: 0.41845479709515576, cent: 0.20815641535540025},
         {rota: 9.547509296882478, jitt: 8.657290547956823, asim: -0.04796548709637993, cent: 0.55271642000927}, 
         {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
         {rota: 0, jitt: 0, asim: 0, cent: 0},
@@ -75,6 +77,8 @@
     ];
     var presetNames = [
         "shoals", 
+        "tighter",
+        "snakes",
         "tumbleweed",
         "old",
         "zero",
@@ -83,7 +87,6 @@
         "avoid, assimilate, center"
     ];
     var curPresetIndex = 0;
-    // an array of colors our boids will inherit their strokecolors from. this is put at the top because otherwise it's in my way
     function Boid(point, rotation, colorPreset) {
         // boid object creator
         this.path = new Path({
@@ -121,6 +124,7 @@
             keepInView(this.path);
                 // loop the boid around the screen if it went off
         },
+
         checkNearby: function() {
             var nearby = [];
             // array for nearby boids
@@ -201,7 +205,41 @@
             }
             // ripped off stackoverflow, this is a method for determining if the nearest boid's position is to the left of right of the current boid. if to the right then turn left and vice versa
         },
+        avoidPoint: function() { 
+            if (avoidPoint) {
+                for (var i = 0; i < 5; i++) { 
+                    var curVector = new Point({
+                        angle: this.path.rotation,
+                        length: cursorRadius/2 * i,
+                        applyMatrix: false
+                    });
+                    // the current information about the boid
+                    if (distFormula(this.path.position + curVector, avoidPoint) <= cursorRadius+personalSpace) {
+                        // if the boid is headed in the direction of the avoidance point and will collide
+                        var vector0 = new Point({
+                            angle: this.path.rotation + 30,
+                            length: cursorRadius,
+                            applyMatrix: false
+                        });
+                        var vector1 = new Point({
+                            angle: this.path.rotation - 30,
+                            length: cursorRadius,
+                            applyMatrix: false
+                        });
+                        // create two vectors to compare which is closer
+                        if (distFormula(this.path.position+vector0, avoidPoint) >= distFormula(this.path.position+vector1, avoidPoint)) {
+                            this.path.rotate(5);
+                        }
+                        else { this.path.rotate(-5); }
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return false;
+        },
         avoidWalls: function() { 
+            // does not work at all
             //console.log(this.path.position);
             var curVector = new Point({
                 angle: this.path.rotation,
@@ -271,7 +309,7 @@
     // how strongly boids should turn from walls
     var wallDistCheck = 500;
     // how far away boids should start turning from walls
-    var boidSpeed = 10;
+    var boidSpeed = 9;
     // how fast the boids should move
     var personalSpace = 65;
     // at which point the boids should try to avoid each other
@@ -288,6 +326,10 @@
     // start off without the hueshift effect
     var increase = true;
     // counter for the breathing effect
+    var cursorRadius = 125;
+    // radius for which the boids should try to avoid the cursor
+    var avoidPoint;
+    // current point for which the boids will try to avoid
     setSpawnInterval();
     // spawn the boids
     
@@ -296,8 +338,10 @@
         boids.forEach(function(boid) {
             // for every boid
             // boid.avoidWalls();
-            boid.jitterRotation();
-            boid.checkNearby();
+            if (!boid.avoidPoint()) {
+                boid.jitterRotation();
+                boid.checkNearby();
+            }
             boid.moveBoid();
             // perform necessary actions
         });
@@ -330,6 +374,20 @@
             });
             // every 60 frames give each boid a new random jitter direction
         }
+    }
+
+    //function onMouseDown(event) {
+    //    avoidPoint = event.point;
+    //    var myCircle = new Path.Circle({
+    //        center: event.point,
+    //        radius: cursorRadius
+    //    });
+    //    myCircle.strokeColor = 'white';
+    //}
+
+    tool.minDistance = 5;
+    function onMouseDrag(event) {
+        avoidPoint = event.point + event.delta;
     }
     
     function setSpawnInterval() {
@@ -410,10 +468,10 @@
             // if key pressed is down arrow then decrement boid speed, stopping it at 0 (negative vector lengths still result in positvie)
         } 
         else if (event.key === "shift") {
-            rotationStrength = randFloat(0, 5);
-            jitterStrength = randFloat(0, 10);
-            assimStrength = randFloat(0, 0.5);
-            centerStrength = randFloat(0, 0.25);
+            rotationStrength = randFloat(-5, 10);
+            jitterStrength = randFloat(-5, 10);
+            assimStrength = randFloat(-0.75, 1.5);
+            centerStrength = randFloat(-0.5, 1);
             // if key pressed is shift then reassign the key variables dicating movement, just for fun
             // {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
             console.log("{rota: " + rotationStrength + ", jitt: " + jitterStrength +  ", asim: " + assimStrength +  ", cent: " + centerStrength + "}, ");
