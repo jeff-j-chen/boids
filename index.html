@@ -65,8 +65,8 @@
         ["#190b28", "#685762", "#9b9987", "#efa9ae", "#e55381"],
     ];
     var presets = [
+        {rota: 0.53, jitt: 5, asim: 0.31144733521242796, cent: 0.024014068884118},
         {rota: 1.6, jitt: 7, asim: 0.3, cent: 0.07},
-        {rota: 0.5, jitt: 7.363573640198961, asim: 0.31144733521242796, cent: 0.0194014068884118},
         {rota: 0.4986989328250657, jitt: 2.9626193740839835, asim: 0.41845479709515576, cent: 0.20815641535540025},
         {rota: 9.547509296882478, jitt: 8.657290547956823, asim: -0.04796548709637993, cent: 0.55271642000927}, 
         {rota: 1.5, jitt: 3, asim: 1/10, cent: 1/20},
@@ -77,7 +77,7 @@
     ];
     var presetNames = [
         "shoals", 
-        "tighter",
+        "looser",
         "snakes",
         "tumbleweed",
         "old",
@@ -96,9 +96,7 @@
             applyMatrix: false,
             rotation: rotation
         });
-        this.baseColor = this.path.strokeColor;
-        this.path.strokeColor.brightness += 0.25;
-        this.path.strokeColor.saturation += 0.25;
+        this.baseColor = this.path.strokeColor.clone();
         // store the initial color so we can restore it 
         // create a new pat, and give it desired attributes
         this.path.add([-15, 10], [0, 0], [-15, -10]);
@@ -109,6 +107,12 @@
         // maybe this will be used later
         this.jitter = 0;
         // the amount the boid should jitter back and forth
+        this.shouldColorChange = true;
+        if (randFloat(0,1) <= dontChangeChance) {
+            this.shouldColorChange = false;
+            this.path.strokeColor.saturation *= 1.5;
+            this.path.strokeColor.brightness *= 1.5;
+        }
     }
     
     Boid.prototype = {
@@ -309,11 +313,11 @@
     // how strongly boids should turn from walls
     var wallDistCheck = 500;
     // how far away boids should start turning from walls
-    var boidSpeed = 9;
+    var boidSpeed = 4;
     // how fast the boids should move
     var personalSpace = 65;
     // at which point the boids should try to avoid each other
-    var numBoids = 85;
+    var numBoids = 110;
     var spawnedBoids = 0;
     // number of boids that we want to spawn in
     var maxSteps = 7;
@@ -324,9 +328,13 @@
     // set the initial colorset for the boids
     var hueShift = false;
     // start off without the hueshift effect
-    var increase = true;
+    var increase = false;
     // counter for the breathing effect
-    var cursorRadius = 125;
+    var increaseTimer = 300;
+    // how long it should take for hue/saturation to change
+    var dontChangeChance = 0.1;
+    // chance for a boid to not change colors
+    var cursorRadius = 175;
     // radius for which the boids should try to avoid the cursor
     var avoidPoint;
     // current point for which the boids will try to avoid
@@ -352,23 +360,27 @@
                     boid.path.strokeColor.hue += 5;
                 });
             }
-            if (frame.count % 50 == 0) {
+            if (frame.count % increaseTimer == 0) {
                 increase = !increase;
             }
             else if (increase) {
                 boids.forEach(function(boid) {
-                    boid.path.strokeColor.brightness += 0.01;
-                    boid.path.strokeColor.saturation += 0.01;
+                    if (boid.shouldColorChange) {
+                        boid.path.strokeColor.brightness = boid.baseColor.brightness * (0.5 + ((frame.count % increaseTimer) / increaseTimer));
+                        boid.path.strokeColor.saturation = boid.baseColor.saturation * (0.5 + ((frame.count % increaseTimer) / increaseTimer));
+                    }
                 });
             }
             else {
                 boids.forEach(function(boid) {
-                    boid.path.strokeColor.brightness -= 0.01;
-                    boid.path.strokeColor.saturation -= 0.01;
+                    if (boid.shouldColorChange) {
+                        boid.path.strokeColor.brightness = boid.baseColor.brightness * (1.5 + (((increaseTimer - frame.count) % increaseTimer) / increaseTimer));
+                        boid.path.strokeColor.saturation = boid.baseColor.saturation * (1.5 + (((increaseTimer - frame.count) % increaseTimer) / increaseTimer));
+                    }
                 });
             }
         }
-        if (frame.count % 60 === 0) {
+        if (frame.count % 30 === 0) {
             boids.forEach(function(boid) {
                 boid.newJitter();
             });
@@ -395,8 +407,9 @@
         var spawnInterval = setInterval(function() {
             // create a spawn interval
             boids.push(new Boid(view.bounds, randFloat(-1, 1) * 180, colorSet));
+            boids.push(new Boid(view.bounds, randFloat(-1, 1) * 180, colorSet));
             // spawn a new boid at the edge of the screen with random rotation and color
-            spawnedBoids++;
+            spawnedBoids += 2;
             // increment the number of boids we have spawned
             if (spawnedBoids >= numBoids) {
                 // if we have spawned as many as we wanted
